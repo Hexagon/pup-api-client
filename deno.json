@@ -1,0 +1,17 @@
+{
+  "name": "@pup/api-client",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "tasks": {
+    "check": "deno fmt && deno check mod.ts"
+  },
+  "exclude": [
+    "static",
+    "example"
+  ],
+  "imports": {
+    "@pup/api-definitions": "../pup-api-definitions/mod.ts"
+  }
+}
