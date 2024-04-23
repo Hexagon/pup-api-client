@@ -12,6 +12,6 @@
     "example"
   ],
   "imports": {
-    "@pup/api-definitions": "../pup-api-definitions/mod.ts"
+    "@pup/api-definitions": "jsr:@pup/api-definitions@^1.0.0"
   }
 }
