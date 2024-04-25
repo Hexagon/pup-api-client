@@ -1,6 +1,6 @@
 {
   "name": "@pup/api-client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "exports": {
     ".": "./mod.ts"
   },
@@ -12,6 +12,7 @@
     "example"
   ],
   "imports": {
-    "@pup/api-definitions": "jsr:@pup/api-definitions@^1.0.0"
+    "@pup/api-definitions": "jsr:@pup/api-definitions@^1.0.0",
+    "@pup/common": "jsr:@pup/common@^1.0.2"
   }
 }

@@ -22,8 +22,8 @@ class RestAPIError extends Error {
 }
 
 export class RestClient {
-  private baseUrl: string; // Declare the types
-  private token: string;
+  public baseUrl: string; // Declare the types
+  public token: string;
 
   constructor(baseUrl: string, token: string) {
     this.baseUrl = baseUrl;
