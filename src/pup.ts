@@ -24,18 +24,29 @@ export class PupRestClient extends RestClient {
    * Constructs a new PupRestClient instance.
    *
    * @param baseUrl - The base URL of the Pup API.
-   * @param jwtSecret -  The JWT secret used for authentication.
+   * @param token -  The JWT token used for authentication.
    * @param eventStream - Optional flag to enable real-time updates via WebSocket (defaults to false).
    */
   constructor(
     baseUrl: string,
-    jwtSecret: string,
+    token: string,
     eventStream: boolean = false,
   ) {
-    super(baseUrl, jwtSecret);
+    super(baseUrl, token);
     if (eventStream) {
       this.setupEventStream();
     }
+  }
+
+  /**
+   * Updates the internal API token used for authentication.
+   * Typically called by Pup plugins when Pup issue a new token for the Plugin.
+   *
+   * @param token - The new API token provided by Pup.
+   * @returns A promise that resolves when the token has been updated.
+   */
+  refreshApiToken(token: string): void {
+    this.token = token;
   }
 
   /**

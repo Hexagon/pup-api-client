@@ -31,6 +31,16 @@ export class RestClient {
   }
 
   /**
+   * Updates the internal API token used for authentication.
+   *
+   * @param token - The new API token provided by Pup.
+   * @returns A promise that resolves when the token has been updated.
+   */
+  refreshApiToken(token: string): void {
+    this.token = token;
+  }
+
+  /**
    * Sends a GET request to the specified API endpoint.
    *
    * @param path - The path of the resource to fetch (relative to the base URL).

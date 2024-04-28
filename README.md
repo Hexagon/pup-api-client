@@ -27,6 +27,8 @@ deno add @pup/api-client @pup/api-definitions
    const client = new PupRestClient("http://localhost:8080", "your-jwt-secret");
    const response: ApiApplicationState = await client.getState();
    console.log(respose);
+
+   // If a new token is issued
    ```
 
 **Key Features**
@@ -37,6 +39,9 @@ deno add @pup/api-client @pup/api-definitions
   endpoints (e.g., `getState`, `startProcess`, `getLogs`).
 - **Error Handling:** Includes error handling mechanisms for graceful failure
   management.
+- **Authentication and Token Refresh:** Employs JSON Web Tokens (JWT) for secure
+  authentication with the Pup REST API. Supports periodic token refreshes
+  through the method `.refreshApiToken()`.
 
 **Development and Contributions**
 
