@@ -10,6 +10,12 @@ and this project adheres to
 
 ### Added
 
+- Add method `sendIpc` for inter-process communication
+
+## [1.0.1] - 2024-04-25
+
+### Added
+
 - Add optional constructor parameter `eventStream` defaulting to false. Add
   `.on()` and `.off()` for subscribing to pup events through WebSocketStreams if
   eventStream is enabled.

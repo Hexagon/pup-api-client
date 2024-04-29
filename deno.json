@@ -12,7 +12,7 @@
     "example"
   ],
   "imports": {
-    "@pup/api-definitions": "jsr:@pup/api-definitions@^1.0.0",
-    "@pup/common": "jsr:@pup/common@^1.0.2"
+    "@pup/api-definitions": "jsr:@pup/api-definitions@^1.0.2",
+    "@pup/common": "jsr:@pup/common@^1.0.3"
   }
 }
