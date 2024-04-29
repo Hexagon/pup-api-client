@@ -11,6 +11,7 @@ import { type ApiResponse, RestClient } from "./rest.ts";
 
 import type {
   ApiApplicationState,
+  ApiIpcData,
   ApiLogItem,
   ApiProcessData,
   ApiTelemetryData,
@@ -94,6 +95,18 @@ export class PupRestClient extends RestClient {
     telemetryData: ApiTelemetryData,
   ): Promise<ApiResponse<void>> {
     return await this.post("/telemetry", telemetryData);
+  }
+
+  /**
+   * Transmits an ipc message to client processes of Pup.
+   *
+   * @param ipcData - The ApiIpcData object to send.
+   * @returns  A Promise that resolves to an ApiResponse (no data expected).
+   */
+  async sendIpc(
+    ipcData: ApiIpcData,
+  ): Promise<ApiResponse<void>> {
+    return await this.post("/ipc", ipcData);
   }
 
   /**
