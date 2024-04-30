@@ -9,6 +9,8 @@ import { EventEmitter, type EventHandler } from "@pup/common/eventemitter";
 
 import { type ApiResponse, RestClient } from "./rest.ts";
 
+import WebSocket from "ws";
+
 import type {
   ApiApplicationState,
   ApiIpcData,
@@ -18,8 +20,9 @@ import type {
 } from "@pup/api-definitions";
 
 export class PupRestClient extends RestClient {
-  private wsStream?: WebSocketStream;
+  private websocket?: WebSocket;
   private events: EventEmitter = new EventEmitter();
+  private aborted: boolean = false;
 
   /**
    * Constructs a new PupRestClient instance.
@@ -165,26 +168,35 @@ export class PupRestClient extends RestClient {
     return await this.get(`/logs?${queryParams.toString()}`); // Send query parameters
   }
 
-  private async setupEventStream() {
+  private setupEventStream() {
     const wsUrl = `${this.baseUrl.replace("http", "ws")}/wss`;
-    this.wsStream = new WebSocketStream(wsUrl, {
-      headers: {
-        "Authorization": `Bearer ${this.token}`,
-      },
-    });
-    const { readable } = await this.wsStream.opened;
-    const reader = readable.getReader();
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) {
-        break;
+    const connect = () => {
+      if (!this.aborted) {
+        this.websocket = new WebSocket(wsUrl, {
+          headers: {
+            "Authorization": `Bearer ${this.token}`,
+          },
+        });
+        this.websocket.on("message", (event: unknown) => {
+          try {
+            const data = JSON.parse(
+              new TextDecoder().decode(event as Uint8Array),
+            );
+            this.events.emit(data.t, data.d);
+          } catch (error) {
+            console.error("Error parsing WebSocket message:", error);
+          }
+        });
+        this.websocket.on("close", () => {
+          if (!this.aborted) {
+            setInterval(() => {
+              connect(); // Attempt to reconnect
+            }, 2500);
+          }
+        });
       }
-      try {
-        const v = JSON.parse(value.toString());
-        this.events.emit(v.t, v.d);
-      } catch (_e) { /* Ignore */ }
-    }
-    return;
+    };
+    connect(); // Initial connection
   }
 
   on(event: string, fn: EventHandler<unknown>) {
@@ -196,7 +208,8 @@ export class PupRestClient extends RestClient {
   }
 
   close() {
+    this.aborted = true;
     this.events.close();
-    this.wsStream?.close();
+    this.websocket?.close();
   }
 }
