@@ -11,11 +11,19 @@ export interface ApiResponse<T> {
   response?: Response;
 }
 
-class RestAPIError extends Error {
+export class RestAPIError extends Error {
   constructor(
     message: string,
     public status: number,
     public responseData?: any,
+  ) {
+    super(message);
+  }
+}
+
+export class RestAPIConnectionError extends Error {
+  constructor(
+    message: string,
   ) {
     super(message);
   }
@@ -136,26 +144,41 @@ export class RestClient {
     options: RequestInit,
     maxRetries = 3,
     initialRetryDelay = 200,
+    timeoutMs = 3000,
   ): Promise<ApiResponse<T>> {
     let retries = 0;
-
-    while (retries < maxRetries) {
+    let timeoutTimer;
+    while (retries <= maxRetries) {
       try {
+        // Expand existing headers with the bearer token
         const headers = {
           "Authorization": "Bearer " + this.token,
           ...options.headers,
         };
 
+        // Prepare an abort controller and timeout handler
+        const controller = new AbortController();
+        timeoutTimer = setTimeout(() => controller.abort(), timeoutMs);
+
+        // Make the request
         const response = await fetch(this.baseUrl + path, {
           ...options,
           headers,
+          signal: controller.signal,
         });
+
+        // Reset the timer
+        clearTimeout(timeoutTimer);
 
         if (!response.ok) {
           let errorData;
+
+          // Catch any response body sent with the error */
           try {
             errorData = await response.json();
-          } catch (e) {}
+          } catch (_e) { /* Ok! */ }
+
+          // Throw!
           throw new RestAPIError(
             `Request failed: ${response.statusText}`,
             response.status,
@@ -163,19 +186,41 @@ export class RestClient {
           );
         }
 
+        // Return an object
         try {
           return await response.json();
-        } catch (e) {
+        } catch (_e) {
           return {};
         }
       } catch (error) {
+        // Throw errors after retries are exhausted
         if (retries >= maxRetries) {
-          throw error; // Retries exhausted, propagate the error up
+          if (error.name === "RestApiError") {
+            throw error;
+          } else if (error.name === "AbortError") {
+            throw new RestAPIConnectionError(
+              "Could not connect to server, connection refused.",
+            );
+          } else {
+            if (error.responseData?.error) {
+              throw new RestAPIConnectionError(
+                `Could not connect to server, retries exhausted. Response data: '${error.responseData.error}'`,
+              );
+            } else if (error.status) {
+              throw new RestAPIConnectionError(
+                `Could not connect to server, retries exhausted. Response status: '${error.status}'`,
+              );
+            }
+          }
         }
+
         // Exponential backoff
-        let delay = initialRetryDelay * Math.pow(2, retries);
+        const delay = initialRetryDelay * Math.pow(2, retries);
         await new Promise((resolve) => setTimeout(resolve, delay));
         retries++;
+      } finally {
+        // Always make sure the timeout timer is reset
+        if (timeoutTimer) clearTimeout(timeoutTimer);
       }
     }
     // This should ideally not happen, but in case it does...

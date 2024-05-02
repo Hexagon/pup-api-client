@@ -20,13 +20,13 @@ deno add @pup/api-client @pup/api-definitions
 2. **Instantiate and Use:**
 
    ```typescript
-   import { PupRestClient } from "@pup/api-client";
-   import { ApiApplicationState } from "@pup/api-definitions";
+   import { type ApiResponse, PupRestClient } from "@pup/api-client";
+   import type { ApiApplicationState } from "@pup/api-definitions";
 
    // You can find the api url and token using `pup state` and `pup token` on the cli
-   const client = new PupRestClient("http://localhost:8080", "your-jwt-secret");
-   const response: ApiApplicationState = await client.getState();
-   console.log(respose);
+   const client = new PupRestClient("http://host:port", "your-token");
+   const response: ApiResponse<ApiApplicationState> = await client.getState();
+   console.log(response);
 
    // If a new token is issued
    ```
