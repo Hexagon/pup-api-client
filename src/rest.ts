@@ -32,10 +32,19 @@ export class RestAPIConnectionError extends Error {
 export class RestClient {
   public baseUrl: string; // Declare the types
   public token: string;
+  private requestTimeoutMs: number;
+  private retries: number;
 
-  constructor(baseUrl: string, token: string) {
+  constructor(
+    baseUrl: string,
+    token: string,
+    requestTimeoutMs: number,
+    retries: number,
+  ) {
     this.baseUrl = baseUrl;
     this.token = token;
+    this.requestTimeoutMs = requestTimeoutMs;
+    this.retries = retries;
   }
 
   /**
@@ -142,13 +151,11 @@ export class RestClient {
   async fetch<T>(
     path: string,
     options: RequestInit,
-    maxRetries = 3,
     initialRetryDelay = 200,
-    timeoutMs = 3000,
   ): Promise<ApiResponse<T>> {
     let retries = 0;
     let timeoutTimer;
-    while (retries <= maxRetries) {
+    while (retries <= this.retries) {
       try {
         // Expand existing headers with the bearer token
         const headers = {
@@ -158,7 +165,10 @@ export class RestClient {
 
         // Prepare an abort controller and timeout handler
         const controller = new AbortController();
-        timeoutTimer = setTimeout(() => controller.abort(), timeoutMs);
+        timeoutTimer = setTimeout(
+          () => controller.abort(),
+          this.requestTimeoutMs,
+        );
 
         // Make the request
         const response = await fetch(this.baseUrl + path, {
@@ -194,7 +204,7 @@ export class RestClient {
         }
       } catch (error) {
         // Throw errors after retries are exhausted
-        if (retries >= maxRetries) {
+        if (retries >= this.retries) {
           if (error.name === "RestApiError") {
             throw error;
           } else if (error.name === "AbortError") {

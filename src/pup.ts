@@ -23,20 +23,23 @@ export class PupRestClient extends RestClient {
   private websocket?: WebSocket;
   private events: EventEmitter = new EventEmitter();
   private aborted: boolean = false;
-
   /**
    * Constructs a new PupRestClient instance.
    *
    * @param baseUrl - The base URL of the Pup API.
    * @param token -  The JWT token used for authentication.
    * @param eventStream - Optional flag to enable real-time updates via WebSocket (defaults to false).
+   * @param requestTimeoutMs - Optional flag to specify request timeout in milliseconds (defaults to 3000).
+   * @param retries - Optional flag to specify retry count (defaults to 3).
    */
   constructor(
     baseUrl: string,
     token: string,
     eventStream: boolean = false,
+    requestTimeoutMs = 3000,
+    retries = 3,
   ) {
-    super(baseUrl, token);
+    super(baseUrl, token, requestTimeoutMs, retries);
     if (eventStream) {
       this.setupEventStream();
     }
